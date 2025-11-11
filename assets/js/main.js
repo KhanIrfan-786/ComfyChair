@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const img = `${baseUrl}/${item.img}`;
       const productPage = `${baseUrl}/products-${item.slug || "default"}.html#${encodeURIComponent(name.replace(/\s+/g, "-").toLowerCase())}`;
 
-      return `🪑 *${name}* x${qty}%0A📷 [View Image](${img})%0A🔗 ${productPage}%0A`;
+      return `🪑 *${name}* x${qty}%0A📷 Image: ${encodeURIComponent(img)}%0A🔗 ${encodeURIComponent(productPage)}%0A`;
     });
 
     const message =
@@ -379,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.open(waUrl, "_blank");
   });
 });
+
 
     }
     if (!$("#wishOverlay")) {
@@ -540,29 +541,46 @@ document.addEventListener("DOMContentLoaded", () => {
         renderWishlist();
       }
     }
-    if (shareBtn) {
-      const url = window.location.href;
-      const title =
-        shareBtn
-          .closest("[data-product]")
-          ?.querySelector(".card-title")
-          ?.textContent?.trim() || "ComfySeat";
-      if (navigator.share) {
-        navigator.share({ title, url }).catch(() => {});
-      } else {
-        navigator.clipboard?.writeText(url);
-        alert("Link copied to clipboard");
-      }
-    }
-    if (wOrder) {
-      const item = state.wishlist.find(
-        (x) => x.id === wOrder.dataset.wishOrder
-      );
-      const text = `Hi I am interested in your products.\n${item?.name ?? ""}`;
-      const url = `https://wa.me/919987979399?text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank");
-    }
-  });
+   if (shareBtn) {
+  const card = shareBtn.closest("[data-product]");
+  const title =
+    card?.querySelector(".card-title")?.textContent?.trim() || "ComfySeat";
+  const img = card?.querySelector("img")?.src || "";
+  const url = window.location.href;
+
+  if (navigator.share) {
+    navigator.share({
+      title,
+      text: `Check out this ${title} from ComfySeat!`,
+      url: url,
+      files: img ? [new File([], img, { type: "image/jpeg" })] : undefined,
+    }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url);
+    alert("🔗 Link copied to clipboard");
+  }
+}
+
+  if (wOrder) {
+  const item = state.wishlist.find(
+    (x) => x.id === wOrder.dataset.wishOrder
+  );
+  if (!item) return;
+
+  const baseUrl = window.location.origin;
+  const imgUrl = item.img.startsWith("http")
+    ? item.img
+    : `${baseUrl}/${item.img}`;
+
+  const message = `Hi 👋 I am interested in this *ComfySeat* product:%0A%0A🪑 *${encodeURIComponent(
+    item.name
+  )}*%0A📷 Image: ${encodeURIComponent(imgUrl)}%0A🔗 ${encodeURIComponent(
+    baseUrl + "/products.html"
+  )}`;
+
+  const waUrl = `https://wa.me/919987979399?text=${message}`;
+  window.open(waUrl, "_blank");
+}
 
   // Remove legacy filter/sort remnants
   $$(".card-body select, .card-body label").forEach((el) => {
@@ -641,4 +659,50 @@ document.getElementById("contactForm").addEventListener("submit", function(e) {
   // form clear karne ke liye:
   this.reset();
 });
+document.addEventListener("DOMContentLoaded", function () {
+  const contactForm = document.getElementById("contactForm");
 
+  if (!contactForm) {
+    console.error("❌ contactForm not found in DOM.");
+    return;
+  }
+
+  contactForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const data = {
+      name: contactForm.name.value.trim(),
+      email: contactForm.email.value.trim(),
+      message: contactForm.message.value.trim()
+    };
+
+    // basic validation
+    if (!data.name || !data.email || !data.message) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    // 👇 apna Apps Script Web App URL yahan daalo
+    const scriptURL = "YOUR_WEB_APP_URL_HERE";
+
+    fetch(scriptURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.status === "success") {
+          alert("✅ " + resp.message);
+          contactForm.reset();
+        } else {
+          alert("❌ " + (resp.message || "Unknown error"));
+          console.error(resp);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        alert("Network error. Check console for details.");
+      });
+  });
+});

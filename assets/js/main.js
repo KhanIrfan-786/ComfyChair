@@ -365,10 +365,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const textLines = state.cart.map((item) => {
       const name = item.name || "Unknown Product";
       const qty = item.qty || 1;
-      const img = `${baseUrl}/${item.img}`;
-      const productPage = `${baseUrl}/products-${item.slug || "default"}.html#${encodeURIComponent(name.replace(/\s+/g, "-").toLowerCase())}`;
 
-      return `🪑 *${name}* x${qty}%0A📷 [View Image](${img})%0A🔗 ${productPage}%0A`;
+      // ✅ Ensure image path is absolute
+      const imgUrl = item.img.startsWith("http")
+        ? item.img
+        : `${baseUrl}/${item.img.replace(/^\/+/, "")}`;
+
+      // ✅ Safer product link — match your actual site structure
+      const productPage = `${baseUrl}/products.html#${encodeURIComponent(
+        item.slug || name.replace(/\s+/g, "-").toLowerCase()
+      )}`;
+
+      // ✅ Proper WhatsApp-safe formatting
+      return `🪑 *${name}* x${qty}%0A📷 Image: ${imgUrl}%0A🔗 ${productPage}%0A`;
     });
 
     const message =
@@ -379,6 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.open(waUrl, "_blank");
   });
 });
+
 
     }
     if (!$("#wishOverlay")) {

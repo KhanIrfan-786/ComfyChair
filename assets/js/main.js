@@ -360,23 +360,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const baseUrl = window.location.origin;
+    // ✅ Set correct base URL (your GitHub Pages site)
+    const baseUrl = "https://khanirfan-786.github.io/ComfyChair";
 
     const textLines = state.cart.map((item) => {
       const name = item.name || "Unknown Product";
       const qty = item.qty || 1;
 
-      // ✅ Ensure image path is absolute
+      // ✅ Ensure image path is correct
       const imgUrl = item.img.startsWith("http")
         ? item.img
         : `${baseUrl}/${item.img.replace(/^\/+/, "")}`;
 
-      // ✅ Safer product link — match your actual site structure
-      const productPage = `${baseUrl}/products.html#${encodeURIComponent(
+      // ✅ Correct product link (no 404)
+      const productPage = `${baseUrl}/#${encodeURIComponent(
         item.slug || name.replace(/\s+/g, "-").toLowerCase()
       )}`;
 
-      // ✅ Proper WhatsApp-safe formatting
+      // ✅ WhatsApp message formatting
       return `🪑 *${name}* x${qty}%0A📷 Image: ${imgUrl}%0A🔗 ${productPage}%0A`;
     });
 
@@ -384,7 +385,10 @@ document.addEventListener("DOMContentLoaded", () => {
       "Hi 👋 I am interested in these *ComfySeat* products:%0A%0A" +
       textLines.join("%0A");
 
+    // ✅ WhatsApp number (replace if needed)
     const waUrl = `https://wa.me/919987979399?text=${message}`;
+
+    // ✅ Open WhatsApp in a new tab
     window.open(waUrl, "_blank");
   });
 });
